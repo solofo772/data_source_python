@@ -1,4 +1,6 @@
 import random
+import os
+from dotenv import load_dotenv
 import time
 import psycopg2
 from faker import Faker
@@ -6,14 +8,15 @@ from datetime import datetime
 import pytz
 
 fake = Faker()
-
+# Charger les variables d'environnement du fichier .env
+load_dotenv()
 # Connexion à PostgreSQL
 conn = psycopg2.connect(
-    host="192.168.43.16",
-    database="exempledb",   # Remplacez par le nom de votre base de données
-    user="root",       # Remplacez par votre nom d'utilisateur PostgreSQL
-    password="root", 
-    port="5432"   
+    host=os.getenv("DB_HOST"),
+    database=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    port=os.getenv("DB_PORT")  
 )
 cursor = conn.cursor()
 
