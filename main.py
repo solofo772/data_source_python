@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import time
 import psycopg2
 from faker import Faker
-from datetime import datetime
+from datetime import datetime, timedelta  # Importez timedelta
 import pytz
 
 fake = Faker()
@@ -57,10 +57,17 @@ madagascar_timezone = pytz.timezone('Indian/Antananarivo')
 
 def generate_sales_transactions():
     user = fake.simple_profile()
-   # Obtenir l'heure actuelle avec le fuseau horaire d'Antananarivo
-    transaction_date_local = datetime.now(madagascar_timezone)  
-  # Convertir la date locale en UTC
-    transaction_date_utc = transaction_date_local.astimezone(pytz.utc)
+    
+    # Obtenir l'heure actuelle en UTC
+    transaction_date_utc = datetime.now(pytz.utc)  
+    
+    # Ajouter 1 heure à l'heure UTC
+    transaction_date_utc += timedelta(hours=1)
+
+    # Convertir en heure locale pour affichage si besoin
+    transaction_date_local = transaction_date_utc.astimezone(madagascar_timezone)
+    print(f"Heure locale : {transaction_date_local.isoformat()}")  # Vérifiez l'heure locale
+    print(f"Heure UTC : {transaction_date_utc.isoformat()}")  # Vérifiez l'heure UTC
 
     product_price = round(random.uniform(10, 1000), 2)
     product_quantity = random.randint(1, 10)
@@ -76,10 +83,11 @@ def generate_sales_transactions():
         'productBrand': random.choice(['apple', 'samsung', 'oneplus', 'mi', 'boat', 'sony']),
         'currency': random.choice(['USD', 'GBP']),
         'customerId': user['username'],
-        'transactionDate': transaction_date_utc.isoformat(),
+        'transactionDate': transaction_date_utc.isoformat(),  # Stocker en UTC
         "paymentMethod": random.choice(['credit_card', 'debit_card', 'online_transfer']),
-        "totalAmount": total_amount  # Calcul du montant total
+        "totalAmount": total_amount
     }
+
 
 def insert_into_postgresql(transaction):
     try:
@@ -127,3 +135,6 @@ if __name__ == "__main__":
 # Fermer la connexion à PostgreSQL à la fin du script
 cursor.close()
 conn.close()
+
+
+#curl -X POST -H "Content-Type: application/json" --data @debezium.json http://localhost:8083/connectors
